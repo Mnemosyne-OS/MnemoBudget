@@ -1,0 +1,303 @@
+{
+  "name": "@mnemosyne-plugins/mnemo-budget",
+  "displayName": "MnemoBudget",
+  "version": "0.2.0",
+  "vendor": "Mnemosyne OS",
+  "category": "Productivity",
+  "icon": "icon.svg",
+  "license": "MIT",
+  "repository": "https://github.com/Mnemosyne-OS/MnemoBudget",
+  "updateStrategy": "git",
+  "description": "Say what you spend and what you plan to spend, sorted into pockets (home, the shop, the children). See what is spent, what is coming and what is left this month. Your files, on your machine.",
+  "descriptionI18n": {
+    "en": "Say what you spend and what you plan to spend, sorted into pockets (home, the shop, the children). See what is spent, what is coming and what is left this month. Your files, on your machine.",
+    "fr": "Dites ce que vous dépensez et ce que vous prévoyez, rangé dans des poches (maison, le magasin, les enfants). Voyez ce qui est dépensé, ce qui arrive et ce qui reste ce mois-ci. Vos fichiers, sur votre machine.",
+    "es": "Diga lo que gasta y lo que prevé gastar, ordenado en bolsillos (casa, la tienda, los niños). Vea lo gastado, lo que viene y lo que queda este mes. Sus archivos, en su equipo."
+  },
+  "keywords": [
+    "budget",
+    "dépenses",
+    "depenses",
+    "expenses",
+    "spending",
+    "gastos",
+    "presupuesto",
+    "argent",
+    "money",
+    "dinero",
+    "loyer",
+    "rent"
+  ],
+  "permissions": [
+    "dialog:open",
+    "vault:read",
+    "vault:write"
+  ],
+  "entrypoints": {
+    "renderer": "index.html"
+  },
+  "widgets": [
+    {
+      "id": "mnemo-budget-main",
+      "icon": "💶",
+      "name": "MnemoBudget",
+      "route": "index.html",
+      "defaultWidth": 1100,
+      "defaultHeight": 760
+    }
+  ],
+  "voiceCommands": {
+    "fr": [
+      "j'ai payé 80 euros de croquettes pour le chien",
+      "j'ai dépensé 45 euros de courses hier",
+      "je prévois 300 euros pour les enfants en décembre",
+      "le loyer du magasin c'est 1200 euros tous les 5 du mois",
+      "combien j'ai dépensé ce mois-ci",
+      "combien il me reste pour le chien",
+      "mets un budget de 120 euros pour le chien"
+    ],
+    "en": [
+      "I paid 80 euros of dog food for the dog",
+      "I spent 45 euros on groceries yesterday",
+      "I plan 300 euros for the children in December",
+      "the shop rent is 1200 euros every 5th of the month",
+      "how much did I spend this month",
+      "how much is left for the dog",
+      "set a budget of 120 euros for the dog"
+    ],
+    "es": [
+      "pagué 80 euros de pienso para el perro",
+      "gasté 45 euros en la compra ayer",
+      "preveo 300 euros para los niños en diciembre",
+      "el alquiler de la tienda son 1200 euros cada día 5",
+      "cuánto he gastado este mes",
+      "cuánto me queda para el perro",
+      "pon un presupuesto de 120 euros para el perro"
+    ]
+  },
+  "agentGuide": [
+    "MnemoBudget keeps what the person spends (paid) and plans to spend (planned), in pockets (Home, Restaurant, Shop, Children…) split into categories (Dog, Rent, Groceries…).",
+    "A sentence with an amount PAID (« j'ai payé 80 € de croquettes pour le chien ») is addExpense. A future one (« je prévois », « le loyer c'est 1200 € tous les 5 ») is planExpense, with repeat when it comes back. « C'est payé / I paid the rent » for something planned is markPaid. « Non, c'était 18 € » is correctExpense on the last line.",
+    "Pass pocket and category in the person's own words, never invented: the app matches them and says what exists. When only a category is said (« le chien »), leave pocket out: the app finds the pocket that holds it.",
+    "🚨 day and when: COPY the person's words (« hier », « lundi », « en décembre », « le 5 »), never compute a date. Leave them out when not said.",
+    "currency: the word said (« euros », « dirhams », « $ »); leave it out when none is said.",
+    "Questions about money (« combien j'ai dépensé », « il me reste combien ») are summary: the app answers with its own sums, say nothing of your own.",
+    "Never delete: nothing here removes a line."
+  ],
+  "agentActions": [
+    {
+      "id": "addExpense",
+      "summary": "Write down money that was PAID: amount, pocket, category, what it was, the day. It waits in « À vérifier » until the person looks at it.",
+      "details": "Answers the line written and what is left on that category's monthly cap when one is set. Refused NO_POCKET (with the pockets) when neither the pocket nor a known category is said; a category the pocket does not have is created and said.",
+      "effect": "write",
+      "params": {
+        "amount": {
+          "type": "number",
+          "description": "The amount said (80, 12.5).",
+          "minimum": 0.01,
+          "maximum": 10000000
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency word said (euros, dirhams, $). Leave out when none is said.",
+          "maxLength": 40
+        },
+        "pocket": {
+          "type": "string",
+          "description": "The pocket as the person says it (maison, le restaurant, le magasin). Leave out when not said.",
+          "maxLength": 80
+        },
+        "category": {
+          "type": "string",
+          "description": "The category as the person says it (chien, courses, loyer).",
+          "maxLength": 80
+        },
+        "label": {
+          "type": "string",
+          "description": "What was bought, in the person's words (croquettes).",
+          "maxLength": 200
+        },
+        "day": {
+          "type": "string",
+          "description": "The day in the person's own words (hier, lundi, le 5). Never a computed date. Leave out for today.",
+          "maxLength": 60
+        }
+      },
+      "required": [
+        "amount"
+      ]
+    },
+    {
+      "id": "planExpense",
+      "summary": "Write down money the person PLANS to spend: once (« en décembre ») or coming back (repeat: the rent every 5th).",
+      "details": "A plan is never counted as spent. It becomes spent with markPaid.",
+      "effect": "write",
+      "params": {
+        "amount": {
+          "type": "number",
+          "description": "The amount said.",
+          "minimum": 0.01,
+          "maximum": 10000000
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency word said. Leave out when none is said.",
+          "maxLength": 40
+        },
+        "pocket": {
+          "type": "string",
+          "description": "The pocket as the person says it. Leave out when not said.",
+          "maxLength": 80
+        },
+        "category": {
+          "type": "string",
+          "description": "The category as the person says it.",
+          "maxLength": 80
+        },
+        "label": {
+          "type": "string",
+          "description": "What it is for, in the person's words.",
+          "maxLength": 200
+        },
+        "when": {
+          "type": "string",
+          "description": "When, in the person's own words (en décembre, le 5, lundi). Never a computed date.",
+          "maxLength": 60
+        },
+        "repeat": {
+          "type": "string",
+          "description": "When it comes back: weekly, monthly or yearly. Leave out for once.",
+          "enum": [
+            "weekly",
+            "monthly",
+            "yearly"
+          ]
+        }
+      },
+      "required": [
+        "amount",
+        "when"
+      ]
+    },
+    {
+      "id": "markPaid",
+      "summary": "Mark a planned line as paid (« j'ai payé le loyer »). Name it by its words (loyer, femme de ménage) or its category.",
+      "details": "Refused AMBIGUOUS with the candidates when several plans match; NO_PLAN when none is due.",
+      "effect": "write",
+      "params": {
+        "what": {
+          "type": "string",
+          "description": "The plan as the person names it (le loyer, la femme de ménage).",
+          "maxLength": 200
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount actually paid, when the person says a different one.",
+          "minimum": 0.01,
+          "maximum": 10000000
+        },
+        "day": {
+          "type": "string",
+          "description": "The day paid, in the person's words. Leave out for today.",
+          "maxLength": 60
+        }
+      },
+      "required": [
+        "what"
+      ]
+    },
+    {
+      "id": "correctExpense",
+      "summary": "Correct a line already written (« non, c'était 18 € », « mets-le dans Restaurant »). Without what, the last line written is corrected.",
+      "effect": "write",
+      "params": {
+        "what": {
+          "type": "string",
+          "description": "The line as the person names it (les croquettes). Leave out for the last line written.",
+          "maxLength": 200
+        },
+        "amount": {
+          "type": "number",
+          "description": "The right amount.",
+          "minimum": 0.01,
+          "maximum": 10000000
+        },
+        "currency": {
+          "type": "string",
+          "description": "The right currency word.",
+          "maxLength": 40
+        },
+        "pocket": {
+          "type": "string",
+          "description": "The right pocket.",
+          "maxLength": 80
+        },
+        "category": {
+          "type": "string",
+          "description": "The right category.",
+          "maxLength": 80
+        },
+        "label": {
+          "type": "string",
+          "description": "The right description.",
+          "maxLength": 200
+        },
+        "day": {
+          "type": "string",
+          "description": "The right day, in the person's words.",
+          "maxLength": 60
+        }
+      }
+    },
+    {
+      "id": "setBudget",
+      "summary": "Set the monthly cap of a category (« 120 € par mois pour le chien »).",
+      "effect": "write",
+      "params": {
+        "category": {
+          "type": "string",
+          "description": "The category as the person says it.",
+          "maxLength": 80
+        },
+        "pocket": {
+          "type": "string",
+          "description": "The pocket, when the person says it.",
+          "maxLength": 80
+        },
+        "amount": {
+          "type": "number",
+          "description": "The monthly cap.",
+          "minimum": 0.01,
+          "maximum": 10000000
+        }
+      },
+      "required": [
+        "category",
+        "amount"
+      ]
+    },
+    {
+      "id": "summary",
+      "summary": "What was spent, what is planned and what is left, for a month, a pocket or a category; shows it on screen.",
+      "details": "Answers with the app's own sums (say). A currency the person gave no rate for is counted apart, never converted.",
+      "effect": "read",
+      "params": {
+        "month": {
+          "type": "string",
+          "description": "The month in the person's words (ce mois, octobre, le mois dernier). Leave out for this month.",
+          "maxLength": 60
+        },
+        "pocket": {
+          "type": "string",
+          "description": "Only this pocket.",
+          "maxLength": 80
+        },
+        "category": {
+          "type": "string",
+          "description": "Only this category.",
+          "maxLength": 80
+        }
+      }
+    }
+  ]
+}
