@@ -1,13 +1,13 @@
 {
   "name": "@mnemosyne-plugins/mnemo-budget",
   "displayName": "MnemoBudget",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "vendor": "Mnemosyne OS",
   "category": "Productivity",
-  "icon": "icon.svg",
   "license": "MIT",
   "repository": "https://github.com/Mnemosyne-OS/MnemoBudget",
   "updateStrategy": "git",
+  "icon": "icon.svg",
   "description": "Say what you spend and what you plan to spend, sorted into pockets (home, the shop, the children). See what is spent, what is coming and what is left this month. Your files, on your machine.",
   "descriptionI18n": {
     "en": "Say what you spend and what you plan to spend, sorted into pockets (home, the shop, the children). See what is spent, what is coming and what is left this month. Your files, on your machine.",

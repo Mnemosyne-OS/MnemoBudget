@@ -1,6 +1,6 @@
 {
   "name": "@mnemosyne-plugins/mnemo-budget",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "MnemoBudget: say what you spend and plan, sorted into pockets, with what is left this month.",
